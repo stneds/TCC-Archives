@@ -1,0 +1,222 @@
+% ============================================================================
+% Modelo de ARTIGO CIENTÍFICO — Instituto de Ensino Superior (iCEV)
+% ============================================================================
+% COMO USAR NO OVERLEAF:
+%   1. Faça upload desta pasta inteira (main.tex + referencias.bib) como um
+%      novo projeto.
+%   2. Edite os campos marcados com "TODO" abaixo (título, autor, curso).
+%   3. Escreva o conteúdo de cada seção no lugar dos parágrafos de exemplo.
+% ============================================================================
+
+\documentclass[
+	article,
+	12pt,
+	oneside,
+	a4paper,
+	section=TITLE,
+	english,
+	brazil,
+	sumario=tradicional
+	]{abntex2}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{microtype}
+
+\usepackage{mathptmx}
+
+\renewcommand{\ABNTEXsectionfont}{\rmfamily\bfseries}
+\renewcommand{\ABNTEXsectionfontsize}{\fontsize{18}{21.6}\selectfont}
+
+\usepackage[brazilian,hyperpageref]{backref}
+\usepackage[alf]{abntex2cite}
+
+\renewcommand{\backrefpagesname}{Citado na(s) página(s):~}
+\renewcommand{\backref}{}
+\renewcommand*{\backrefalt}[4]{
+	\ifcase #1 %
+		Nenhuma citação no texto.%
+	\or
+		Citado na página #2.%
+	\else
+		Citado #1 vezes nas páginas #2.%
+	\fi}%
+
+\newcommand{\logoicevheader}{\includegraphics[height=1.9cm]{imagens/logo-icev}}
+
+\makepagestyle{icevpretextual}
+\makeoddhead{icevpretextual}{}{\logoicevheader}{}
+
+\makepagestyle{icevheadings}
+\makeoddhead{icevheadings}{}{\logoicevheader}{}
+\makeoddfoot{icevheadings}{}{\thepage}{}
+
+\setlength{\headheight}{2.0cm}
+\setlength{\headsep}{0.5cm}
+\checkandfixthelayout
+
+\providecommand{\imprimirsubtitulo}{}
+\newcommand{\subtitulo}[1]{\renewcommand{\imprimirsubtitulo}{#1}}
+
+% TODO: preencha com os dados reais do seu trabalho. Em \autor, informe o
+% nome do aluno e, na linha seguinte (separados por \\), o nome do professor
+% orientador. Se o trabalho não tiver subtítulo, apague a linha
+% \subtitulo{} e o \par correspondente dela dentro do \maketitle logo abaixo.
+\titulo{Título}
+\subtitulo{Subtítulo}
+\autor{Nome do Aluno Completo \\ Nome do Professor Orientador Completo}
+\local{Teresina -- PI}
+\data{2026}
+
+\renewcommand{\maketitle}{%
+	\thispagestyle{icevpretextual}
+	\begin{center}
+		{\fontsize{18}{21.6}\selectfont\bfseries\MakeUppercase{\imprimirtitulo}\par}
+		{\fontsize{18}{21.6}\selectfont\imprimirsubtitulo\par}
+	\end{center}
+	\vspace{2cm}
+	\begin{flushright}
+		\fontsize{14}{16.8}\selectfont\imprimirautor
+	\end{flushright}
+	\vspace{2.5cm}
+}
+
+\renewenvironment{resumoumacoluna}[1][\resumoname]{%
+	\PRIVATEbookmarkthis{#1}%
+	\parindent0pt\relax
+	\noindent\textbf{#1:}\par
+	\vspace{12pt}
+}{%
+	\par
+	\PRIVATEclearpageifneeded
+}
+
+\definecolor{blue}{RGB}{41,5,195}
+\makeatletter
+\hypersetup{
+		pdftitle={\@title},
+		pdfauthor={\@author},
+		pdfsubject={Artigo científico},
+		pdfcreator={LaTeX with abnTeX2},
+		pdfkeywords={icev}{artigo}{cientifico},
+		colorlinks=true,
+		linkcolor=blue,
+		citecolor=blue,
+		filecolor=magenta,
+		urlcolor=blue,
+		bookmarksdepth=4
+}
+\makeatother
+
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+
+\makeindex
+
+\begin{document}
+
+\selectlanguage{brazil}
+\frenchspacing
+\pagestyle{icevpretextual}
+
+\maketitle
+
+% Resumo: parágrafo único, de 150 a 500 palavras (NBR 6022:2018). Substitua
+% o texto abaixo pelo resumo real.
+\begin{resumoumacoluna}
+Em um único parágrafo, de 150 a 500 palavras, apresente o conteúdo do
+trabalho de forma sucinta, contendo a ideia principal do tema e os
+objetivos. Esse resumo ajuda os leitores a decidir se o artigo completo é
+relevante para suas pesquisas ou interesses, economizando tempo ao
+proporcionar uma visão geral do estudo.
+
+\vspace{\onelineskip}
+\noindent
+\textbf{Palavras-chave:} \textit{palavra-chave 1}. \textit{palavra-chave 2}. \textit{palavra-chave 3}.
+\end{resumoumacoluna}
+
+% Abstract: opcional pela NBR 6022, mas comum no modelo do iCEV.
+\renewcommand{\resumoname}{Abstract}
+\begin{resumoumacoluna}
+\begin{otherlanguage*}{english}
+Versão completa do resumo em língua inglesa.
+
+\vspace{\onelineskip}
+\noindent
+\textbf{Keywords:} \textit{keyword 1}. \textit{keyword 2}. \textit{keyword 3}.
+\end{otherlanguage*}
+\end{resumoumacoluna}
+
+\textual
+\pagestyle{icevheadings}
+
+\section{Introdução}
+
+Na introdução, estabeleça a relevância do tema abordado, apresentando a
+questão central do trabalho e como se pretende analisá-la. Aponte o
+objeto, o problema, as hipóteses que poderão ou não ser confirmadas no
+decorrer da pesquisa e, por fim, os objetivos geral e específicos.
+
+Em seguida, faça uma justificativa teórica, explicando por que o trabalho
+é relevante. Lembre-se: todas as fontes citadas no texto devem estar
+listadas na seção de referências, como no exemplo a seguir (\cite{exemplo2024}).
+
+O encerramento da introdução deve apresentar as seções do artigo que serão
+abordadas, elencando de forma sucinta o que se pretende nos próximos
+tópicos.
+
+\section{Referencial teórico}
+
+Apresente os conceitos e explicações fundamentadas que sustentam a
+discussão do tema. É importante que haja uma estrutura lógica, permitindo
+ao leitor compreender as ideias convergentes e divergentes entre os
+autores trabalhados e o pesquisador.
+
+Citações de até 3 linhas devem estar no corpo do texto, entre aspas; já
+citações com mais de 3 linhas devem ser apresentadas em bloco recuado, com
+fonte 10 e espaçamento simples, como no ambiente \texttt{citacao} a
+seguir:
+
+\begin{citacao}
+Citações com mais de três linhas devem ser destacadas com recuo de 4 cm da
+margem esquerda, fonte tamanho 10 e espaçamento simples entre linhas,
+conforme a NBR 10520 \cite{exemplo2024}.
+\end{citacao}
+
+\section{Metodologia}
+
+Descreva o tipo de pesquisa, os procedimentos metodológicos, a amostra
+(quando houver) e os instrumentos utilizados para a coleta e análise dos
+dados.
+
+\section{Resultados}
+
+Apresente os resultados obtidos na pesquisa, utilizando tabelas, gráficos
+e figuras quando ajudarem o leitor a compreender os dados encontrados.
+
+\section{Discussão}
+
+Discuta os resultados apresentados, relacionando-os com o referencial
+teórico e apontando convergências, divergências e possíveis explicações
+para os achados.
+
+\section{Considerações finais}
+
+Nesta seção, faça as considerações finais sobre o trabalho, voltando ao
+problema central e aos objetivos apresentados anteriormente. Avalie o que
+foi proposto e confirme ou refute as hipóteses levantadas. Por fim, revise
+brevemente os conceitos principais discutidos e os autores que
+fundamentaram o artigo, sem introduzir novas ideias, autores ou citações.
+A conclusão deve ser objetiva, refletindo sobre o que foi abordado ao
+longo do trabalho.
+
+\bookmarksetup{startatroot}
+\postextual
+
+% TODO: edite o arquivo referencias.bib com as fontes reais do seu trabalho.
+\bibliography{referencias}
+
+\end{document}
