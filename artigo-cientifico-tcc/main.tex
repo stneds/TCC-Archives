@@ -155,18 +155,72 @@ Versão completa do resumo em língua inglesa.
 
 \section{Introdução}
 
-Na introdução, estabeleça a relevância do tema abordado, apresentando a
-questão central do trabalho e como se pretende analisá-la. Aponte o
-objeto, o problema, as hipóteses que poderão ou não ser confirmadas no
-decorrer da pesquisa e, por fim, os objetivos geral e específicos.
+Robotic Process Automation (RPA) é uma abordagem de automação voltada
+principalmente à execução de tarefas repetitivas, estruturadas e baseadas em
+regras, permitindo que bots de software reproduzam interações normalmente
+realizadas por usuários em sistemas digitais. A literatura aponta RPA como
+uma área de crescente relevância para organizações, ao mesmo tempo em que
+identifica desafios relacionados à seleção de processos, desenvolvimento,
+manutenção, governança e evolução das automações \cite{wewerka2020,
+syed2020}. Entre esses desafios, a própria construção inicial da automação
+concentra parte relevante do esforço, pois exige converter manualmente um
+processo já conhecido em uma sequência precisa de interações com a
+interface do sistema-alvo.
 
-Em seguida, faça uma justificativa teórica, explicando por que o trabalho
-é relevante. Lembre-se: todas as fontes citadas no texto devem estar
-listadas na seção de referências, como no exemplo a seguir (\cite{exemplo2024}).
+Nos últimos anos, o avanço da inteligência artificial generativa e dos
+Modelos de Linguagem de Grande Escala (LLMs) ampliou as possibilidades de
+interação entre usuários e sistemas de automação. Em vez de exigir que toda
+a lógica de um processo seja especificada manualmente, modelos de linguagem
+podem interpretar descrições textuais de processos e produzir representações
+estruturadas \cite{bettencourt2026}. Essa possibilidade já vem sendo
+explorada diretamente no contexto de RPA: \citeonline{chen2026} propõem o
+AutoRPA, no qual agentes baseados em LLM sintetizam funções de automação
+reutilizáveis a partir da observação de interações com a interface gráfica.
+A aplicação industrial reforça a relevância do problema: o Microsoft Power
+Automate já disponibiliza recursos de Copilot capazes de receber descrições
+em linguagem natural e gerar estruturas de automação
+\cite{microsoftcopilot2026}. Esse cenário demonstra que o tema está
+alinhado a uma tendência tecnológica real --- mas também que a contribuição
+deste trabalho não pode ser apresentada como a simples ideia de gerar
+automações por linguagem natural, e sim como a arquitetura adotada, o
+recorte de uma representação intermediária estruturada submetida a
+validação determinística, e a avaliação sistemática da solução.
 
-O encerramento da introdução deve apresentar as seções do artigo que serão
-abordadas, elencando de forma sucinta o que se pretende nos próximos
-tópicos.
+O problema de pesquisa que orienta este trabalho é: em que medida modelos de
+linguagem de grande escala podem ser utilizados para gerar workflows RPA
+executáveis em aplicações web a partir de requisitos descritos em linguagem
+natural? Parte-se da hipótese de que a utilização de um LLM existente,
+combinada com uma representação intermediária estruturada e um mecanismo
+determinístico de validação e execução, pode reduzir o esforço necessário
+para construir RPAs web, mantendo uma taxa de sucesso suficiente para
+demonstrar a viabilidade da abordagem em processos controlados.
+
+O objetivo geral deste trabalho é desenvolver e avaliar uma plataforma que
+utilize LLMs existentes para interpretar requisitos em linguagem natural e
+gerar workflows RPA executáveis em aplicações web. De forma específica,
+buscou-se: (i) definir um modelo estruturado para representar ações e
+etapas de um workflow RPA; (ii) integrar um LLM existente via API para
+converter requisitos em linguagem natural em workflows estruturados; (iii)
+desenvolver um mecanismo de validação capaz de impedir ou rejeitar ações não
+suportadas pela plataforma; (iv) implementar um motor de execução de RPA
+para aplicações web utilizando Playwright; (v) registrar informações de
+execução (sucesso, falhas, duração, etapas); (vi) construir cenários de
+teste com diferentes níveis de complexidade; e (vii) avaliar a solução por
+métricas de taxa de sucesso, aderência aos requisitos, tempo de geração,
+erros e necessidade de intervenção humana.
+
+Este artigo está organizado em seis seções, incluindo esta introdução. A
+Seção 2 apresenta o referencial teórico, abordando os conceitos e os
+desafios de RPA, o uso de LLMs na modelagem e na geração de processos e os
+trabalhos relacionados à geração de automações a partir de linguagem
+natural. A Seção 3 descreve a metodologia, detalhando a arquitetura da
+plataforma desenvolvida, os dois modos de geração comparados, o mecanismo
+de validação, o motor de execução baseado em Playwright e o ambiente
+experimental controlado. A Seção 4 apresenta os resultados obtidos com a
+execução dos cenários de teste nos modos \texttt{constrained} e
+\texttt{free}. A Seção 5 discute esses resultados à luz do referencial
+teórico. Por fim, a Seção 6 apresenta as considerações finais, retomando o
+problema de pesquisa e a hipótese que orientaram o trabalho.
 
 \section{Referencial teórico}
 
