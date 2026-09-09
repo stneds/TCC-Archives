@@ -65,11 +65,11 @@
 % nome do aluno e, na linha seguinte (separados por \\), o nome do professor
 % orientador. Se o trabalho não tiver subtítulo, apague a linha
 % \subtitulo{} e o \par correspondente dela dentro do \maketitle logo abaixo.
-\titulo{Título}
-\subtitulo{Subtítulo}
-\autor{Nome do Aluno Completo \\ Nome do Professor Orientador Completo}
+\titulo{Geração de Workflows RPA a partir de Linguagem Natural com LLMs}
+\subtitulo{avaliação experimental entre geração restrita e livre por schema em aplicações web}
+\autor{Antonio Santana Castelo Branco Bisneto \\ Nome do Professor Orientador Completo}
 \local{Teresina -- PI}
-\data{2026}
+\data{08/09/2026}
 
 \renewcommand{\maketitle}{%
 	\thispagestyle{icevpretextual}
@@ -124,18 +124,39 @@
 
 \maketitle
 
-% Resumo: parágrafo único, de 150 a 500 palavras (NBR 6022:2018). Substitua
-% o texto abaixo pelo resumo real.
+% Resumo: parágrafo único, de 150 a 500 palavras (NBR 6022:2018).
 \begin{resumoumacoluna}
-Em um único parágrafo, de 150 a 500 palavras, apresente o conteúdo do
-trabalho de forma sucinta, contendo a ideia principal do tema e os
-objetivos. Esse resumo ajuda os leitores a decidir se o artigo completo é
-relevante para suas pesquisas ou interesses, economizando tempo ao
-proporcionar uma visão geral do estudo.
+A Automação Robótica de Processos (RPA) tem se consolidado como uma
+abordagem relevante para a execução de tarefas repetitivas e baseadas em
+regras, mas sua adoção enfrenta desafios recorrentes na etapa de
+construção das automações, que tradicionalmente exige converter
+manualmente um processo já conhecido em uma sequência precisa de
+interações com a interface de um sistema. Este trabalho investiga em que
+medida modelos de linguagem de grande escala (LLMs) podem ser utilizados
+para gerar workflows RPA executáveis em aplicações web a partir de
+requisitos descritos em linguagem natural, propondo uma arquitetura na
+qual a saída do LLM é traduzida em uma representação intermediária
+estruturada e submetida a um mecanismo determinístico de validação
+sintática e semântica antes de ser executada por um motor próprio
+construído sobre o Playwright. O eixo experimental do trabalho compara
+dois modos de geração a partir da mesma descrição textual: um modo
+restrito por schema formal (\textit{constrained}) e um modo sem restrição
+estrutural, interpretado de forma tolerante (\textit{free}), ambos
+submetidos ao mesmo validador, isolando o efeito específico da restrição
+estrutural sobre a saída do LLM. Para avaliar a solução, foi construído um
+catálogo de dezoito cenários de teste, distribuídos em três níveis de
+complexidade, executados contra uma aplicação-alvo própria e controlada,
+totalizando 108 ensaios por rodada de coleta. As métricas analisadas
+incluem taxa de validade da geração, taxa de sucesso de execução,
+aderência aos requisitos, tempo de geração, tipos de erro e necessidade de
+intervenção humana. Os resultados obtidos permitem discutir em que
+condições cada modo de geração se mostra mais adequado e em que medida a
+combinação entre LLM e validação determinística é suficiente para
+viabilizar a geração automatizada de RPAs web.
 
 \vspace{\onelineskip}
 \noindent
-\textbf{Palavras-chave:} \textit{palavra-chave 1}. \textit{palavra-chave 2}. \textit{palavra-chave 3}.
+\textbf{Palavras-chave:} \textit{Automação Robótica de Processos}. \textit{Modelos de Linguagem de Grande Escala}. \textit{Geração de Workflows Web}.
 \end{resumoumacoluna}
 
 % Abstract: opcional pela NBR 6022, mas comum no modelo do iCEV.
@@ -242,9 +263,151 @@ conforme a NBR 10520 \cite{exemplo2024}.
 
 \section{Metodologia}
 
-Descreva o tipo de pesquisa, os procedimentos metodológicos, a amostra
-(quando houver) e os instrumentos utilizados para a coleta e análise dos
-dados.
+Trata-se de uma pesquisa aplicada, de natureza experimental, conduzida por
+meio do desenvolvimento de uma plataforma e da execução controlada de
+cenários de teste. O objetivo não é apenas verificar se a geração de
+workflows por linguagem natural é tecnicamente possível --- o que já é
+demonstrado por soluções industriais como o Copilot do Power Automate e
+por trabalhos como o AutoRPA \cite{microsoftcopilot2026, chen2026} --- mas
+avaliar sistematicamente uma arquitetura específica: um formato
+intermediário validado deterministicamente entre a saída do LLM e a
+execução real, e o efeito de restringir ou não essa saída por um schema
+formal.
+
+\subsection{Arquitetura da plataforma}
+
+A plataforma é composta por dois componentes desacoplados, que se
+comunicam exclusivamente por meio de uma API HTTP: um front-end para
+cadastro de automações e visualização de gerações, execuções e métricas; e
+um back-end responsável por três funções centrais --- interpretar a
+descrição em linguagem natural por meio de um LLM, validar a saída
+produzida e executá-la de fato em um navegador controlado.
+
+Internamente, o back-end é organizado em módulos com responsabilidades
+isoladas: um módulo de esquema, responsável apenas pela forma dos dados e
+pelas regras de validação; um módulo de planejamento, responsável somente
+pela comunicação com o LLM; um motor de execução, responsável por
+interpretar um workflow validado e delegar cada ação a um manipulador
+específico; e uma camada de abstração sobre o mecanismo de automação de
+navegador, que permite substituir a implementação real por uma
+implementação simulada em testes. Essa separação permite, por exemplo,
+trocar o provedor de LLM sem alterar o motor de execução, e testar o motor
+de execução sem depender de um navegador real.
+
+\subsection{Representação intermediária do workflow}
+
+O artefato central produzido pelo LLM não é código executável diretamente,
+mas um workflow estruturado, representado como uma lista ordenada de
+ações. Foram definidos nove tipos de ação (\texttt{navigate}, \texttt{click},
+\texttt{fill}, \texttt{select}, \texttt{waitFor}, \texttt{extract},
+\texttt{forEach}, \texttt{if} e \texttt{download}), cada um com um
+conjunto fixo de campos permitidos. As ações \texttt{forEach} e \texttt{if}
+admitem sub-passos aninhados, com profundidade máxima limitada, para
+representar iteração e decisão condicional sem exigir uma estrutura de
+controle turing-completa.
+
+Uma decisão arquitetural central é que o LLM nunca é autorizado a gerar
+seletores de interface na forma de CSS ou XPath. Todo alvo de interação é
+descrito de forma semântica --- por rótulo, papel (\textit{role}), texto
+visível, \textit{placeholder} ou identificador de teste ---, o que é
+mapeado diretamente para os métodos de localização semântica do
+Playwright. Essa escolha tem por objetivo reduzir a fragilidade da
+automação frente a mudanças estruturais da interface, e concentrar a
+maior parte dos erros de geração em uma única categoria (erro de seleção),
+facilitando sua análise.
+
+\subsection{Modos de geração comparados}
+
+O eixo experimental central deste trabalho é a comparação entre dois
+modos de geração do workflow a partir da mesma descrição em linguagem
+natural:
+
+\begin{description}
+\item[Modo \texttt{constrained}] --- a chamada ao LLM é acompanhada de um
+schema formal (derivado da própria definição das ações), que restringe
+estruturalmente o que o modelo pode produzir como saída.
+\item[Modo \texttt{free}] --- a chamada ao LLM não impõe restrição
+estrutural; o modelo é instruído, por meio do prompt, a responder apenas
+com um objeto JSON, e a saída é interpretada de forma tolerante.
+\end{description}
+
+Em ambos os modos, a saída --- estruturalmente restrita ou não --- é
+submetida ao mesmo mecanismo de validação, descrito a seguir. Essa
+simetria é o que permite isolar, nos resultados, o efeito específico da
+restrição estrutural: qualquer diferença observada entre os dois modos não
+decorre de regras de validação distintas, mas exclusivamente da presença
+ou ausência do schema no momento da geração.
+
+\subsection{Mecanismo de validação}
+
+Todo workflow produzido pelo LLM, em qualquer modo, passa por um
+validador determinístico antes de ser considerado apto à execução. A
+validação ocorre em duas camadas: uma camada sintática, que verifica se a
+estrutura do JSON produzido corresponde ao formato definido para cada tipo
+de ação; e uma camada semântica, que aplica regras adicionais não
+capturadas apenas pela forma dos dados --- entre elas, a restrição de que
+URLs de navegação e valores de seletor pertençam ao domínio autorizado
+para aquela automação, a restrição de que valores preenchidos em campos
+somente contenham marcadores de credencial de uma lista permitida (nunca
+texto livre interpretado como segredo), e o limite máximo de profundidade
+de aninhamento para \texttt{forEach} e \texttt{if}.
+
+Um workflow reprovado em qualquer uma das duas camadas é marcado como
+inválido e não é executado; os erros de validação, os tokens consumidos e
+a latência da chamada ao LLM são registrados mesmo nesse caso, por
+constituírem dado experimental relevante para a comparação entre os
+modos.
+
+\subsection{Motor de execução}
+
+Workflows validados são executados por um motor próprio, construído sobre
+o Playwright, em um navegador \textit{headless} isolado por execução. O
+motor percorre os passos do workflow em sequência, interrompendo a
+execução no primeiro passo que falhar, e delega cada ação a um manipulador
+específico responsável por traduzi-la em uma interação real com a página.
+Valores de credencial referenciados por marcadores (como usuário e senha)
+são resolvidos a partir de variáveis de ambiente do próprio motor de
+execução, nunca sendo expostos ao LLM ou persistidos como texto plano. O
+resultado de cada passo --- situação, duração, mensagem de erro quando
+houver, evidência em imagem em caso de falha, e valor eventualmente
+extraído --- é registrado individualmente, permitindo reconstruir
+integralmente o comportamento de uma execução após o fato.
+
+\subsection{Ambiente experimental controlado}
+
+Para garantir a reprodutibilidade dos experimentos, todos os cenários de
+teste têm como alvo uma aplicação web própria e isolada, desenvolvida
+especificamente para este trabalho, executada localmente e não sujeita a
+alterações externas --- ao contrário de um site de terceiros, cuja
+interface poderia mudar entre rodadas de coleta e invalidar a comparação.
+
+Foi definido um catálogo fixo de dezoito cenários de teste, distribuídos
+igualmente em três níveis de complexidade: simples (fluxo linear de
+navegação, preenchimento, extração e exportação), intermediário
+(acrescenta filtro ou paginação e uma estrutura de controle) e complexo
+(combina múltiplas estruturas de controle e estágios). Um dos cenários do
+nível complexo foi deliberadamente definido como não representável pela
+plataforma --- uma forma de iteração aninhada que a aplicação-alvo não
+expõe --- com o objetivo específico de observar o comportamento de cada
+modo de geração diante de um requisito impossível de satisfazer; por essa
+razão, esse cenário é analisado separadamente e não é contabilizado no
+cálculo da taxa de sucesso geral.
+
+Cada um dos dezoito cenários é executado nos dois modos de geração, com
+três repetições por combinação cenário-modo, número escolhido como
+compromisso entre mitigar a variabilidade inerente à geração por LLM e
+manter viável o custo e o tempo de coleta em um trabalho de conclusão de
+curso. Isso totaliza 108 ensaios por rodada completa de coleta
+($18 \times 2 \times 3$). Para cada ensaio, são registrados: validade sintática e semântica
+do workflow gerado; sucesso ou falha da execução; aderência do workflow
+executado aos requisitos do cenário, avaliada por um critério
+determinístico que verifica a presença das ações obrigatórias, o
+cumprimento de um limite de passos e a correspondência dos valores
+extraídos com os valores esperados; tempo de geração; tempo de execução;
+tipos de erro observados; e consumo de tokens. A única métrica não
+extraída automaticamente é a necessidade de intervenção humana, registrada
+manualmente durante a revisão dos casos em que o workflow gerado exigiu
+correção para se tornar utilizável.
 
 \section{Resultados}
 
