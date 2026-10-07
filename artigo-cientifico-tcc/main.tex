@@ -67,7 +67,7 @@
 % \subtitulo{} e o \par correspondente dela dentro do \maketitle logo abaixo.
 \titulo{Geração de Workflows RPA a partir de Linguagem Natural com LLMs}
 \subtitulo{avaliação experimental entre geração restrita e livre por schema em aplicações web}
-\autor{Antonio Santana Castelo Branco Bisneto \\ Nome do Professor Orientador Completo}
+\autor{Antonio Santana Castelo Branco Bisneto \\ Lucas Silva Costa}
 \local{Teresina -- PI}
 \data{08/09/2026}
 
@@ -245,21 +245,220 @@ problema de pesquisa e a hipótese que orientaram o trabalho.
 
 \section{Referencial teórico}
 
-Apresente os conceitos e explicações fundamentadas que sustentam a
-discussão do tema. É importante que haja uma estrutura lógica, permitindo
-ao leitor compreender as ideias convergentes e divergentes entre os
-autores trabalhados e o pesquisador.
+\subsection{Automação Robótica de Processos: definição, critérios de seleção e limitações}
 
-Citações de até 3 linhas devem estar no corpo do texto, entre aspas; já
-citações com mais de 3 linhas devem ser apresentadas em bloco recuado, com
-fonte 10 e espaçamento simples, como no ambiente \texttt{citacao} a
-seguir:
+Robotic Process Automation (RPA) carece, até hoje, de uma definição
+unânime na literatura. Ao revisar 63 publicações sobre o tema,
+\citeonline{wewerka2020} identificam que a maioria das definições
+converge para dois eixos: RPA é uma solução baseada em software --- um
+``robô'' ou ``assistente virtual'' --- que \textit{imita o comportamento
+humano} ao interagir com sistemas já existentes. A essa base, somam-se
+três características recorrentes do processo automatizado: natureza
+\textbf{baseada em regras}, consumo de \textbf{dados estruturados} e foco
+em \textbf{tarefas rotineiras}. A definição formalizada pelo IEEE em 2017
+(apud \citeonline{wewerka2020}) acrescenta ainda a \textbf{não
+invasividade} --- a automação opera sobre a interface de sistemas já
+existentes, sem alterar sua lógica de negócio --- e a exigência de que
+exceções sejam tratadas por um humano, aspecto que nenhuma outra
+definição revisada contempla explicitamente.
 
-\begin{citacao}
-Citações com mais de três linhas devem ser destacadas com recuo de 4 cm da
-margem esquerda, fonte tamanho 10 e espaçamento simples entre linhas,
-conforme a NBR 10520 \cite{exemplo2024}.
-\end{citacao}
+Essas características também demarcam a fronteira entre RPA e tecnologias
+correlatas. Em comparação à Automação Inteligente/Cognitiva, RPA opera
+sobre dados estruturados e decisões baseadas em regras, produzindo um
+resultado determinístico; já a automação inteligente lida com dados não
+estruturados e decisões baseadas em conhecimento ou experiência,
+produzindo resultados probabilísticos \cite{wewerka2020}. Frente à
+Business Process Management (BPM), a diferença é de escopo: BPM
+reengenheira o processo para otimizá-lo (muda o \textit{como} o trabalho
+é feito), enquanto RPA automatiza o processo \textit{como ele já existe}
+(muda apenas o \textit{onde} o trabalho é feito), consistindo numa
+automação leve, não invasiva, sobreposta aos sistemas de registro
+\cite{wewerka2020}.
+
+A literatura também converge sobre quais processos são adequados à
+automação por RPA. \citeonline{wewerka2020} sintetizam os critérios mais
+citados: repetitividade (alto volume de execuções), caráter baseado em
+regras (processo padronizado, ambiente estável, exceções limitadas),
+esforço manual elevado, baixa complexidade de implementação e entradas e
+saídas digitais e estruturadas. Esses critérios orientam diretamente o
+desenho experimental deste trabalho: os dezoito cenários de teste
+descritos na Seção 3 foram deliberadamente construídos em três níveis de
+complexidade crescente --- do fluxo linear ao encadeamento de múltiplas
+estruturas de controle --- justamente para observar em que ponto desse
+espectro a geração automatizada por LLM deixa de produzir workflows
+válidos e aderentes.
+
+Apesar dos benefícios documentados --- ganhos de velocidade,
+disponibilidade e conformidade \cite{wewerka2020} ---, a própria natureza
+de RPA concentra sua principal limitação na etapa de construção da
+automação: scripts são tipicamente desenvolvidos manualmente e exigem
+manutenção constante, sendo frágeis a mudanças na interface do sistema-alvo
+\cite{chen2026}. É exatamente essa tensão --- entre a eficiência de
+execução de um script fixo e o custo e a fragilidade de produzi-lo e
+mantê-lo manualmente --- que motiva a investigação, nas duas próximas
+subseções, do uso de LLMs para gerar a lógica da automação a partir de
+linguagem natural.
+
+\subsection{Modelos de linguagem de grande escala na geração de modelos estruturados de processo}
+
+Em um contexto mais amplo que o de RPA, a Business Process Modeling (BPM)
+enfrenta um problema estrutural semelhante: derivar modelos de processo
+(na notação BPMN) a partir de descrições textuais é uma atividade
+trabalhosa, inconsistente e propensa a omissões quando feita manualmente
+\cite{bettencourt2026}. Ao revisar sistematicamente 41 publicações sobre
+transformação de linguagem natural em BPMN, \citeonline{bettencourt2026}
+mostram que, diferentemente de pipelines de PLN tradicionais baseados em
+regras linguísticas pré-definidas, LLMs interpretam o texto a partir de
+representações internas aprendidas, permitindo extrair e formalizar
+informação de processo sem regras manualmente codificadas. Esse papel do
+LLM no pipeline costuma ser multifacetado --- extração de informação,
+geração estruturada, modelagem intermediária e refinamento iterativo ---,
+mas raramente se resume a produzir o artefato final diretamente: o LLM
+tipicamente produz uma \textbf{representação intermediária estruturada}
+(um modelo formal, uma DSL, um \textit{schema} JSON ou um gabarito de
+código), que então é validada, interpretada programaticamente ou
+convertida deterministicamente no artefato alvo \cite{bettencourt2026}.
+Esse achado é o principal alicerce teórico da arquitetura adotada neste
+trabalho: o workflow RPA gerado pelo LLM nunca é executado diretamente,
+mas sempre tratado como uma representação intermediária sujeita a um
+validador determinístico antes de alcançar o motor de execução (Seção
+3.4).
+
+A forma como esse LLM é instruído também é documentada de modo
+consistente na literatura. \citeonline{bettencourt2026} descrevem uma
+estrutura de \textit{prompt engineering} --- proposta por Neuberger et
+al. (2025 apud \citeonline{bettencourt2026}) --- organizada em três
+componentes: \textbf{contexto} (o objetivo geral da tarefa), \textbf{
+descrição da tarefa} (quais elementos extrair e quais restrições
+semânticas ou sintáticas seguir) e \textbf{restrições} (exigências formais
+de saída, como um \textit{schema} JSON válido). Essa mesma tripartição é
+reconhecível na construção do prompt de sistema deste trabalho
+(\texttt{buildSystemPrompt}, Seção 3.2): o contexto fixa o papel do
+modelo como tradutor de linguagem natural para workflow estruturado; a
+descrição da tarefa enumera as nove ações suportadas e suas restrições
+sintáticas; e as restrições impõem o domínio de navegação permitido e os
+\textit{placeholders} de credencial autorizados. Outras técnicas de
+instrução documentadas --- aprendizado em contexto por exemplos,
+injeção de conhecimento estrutural e \textit{Retrieval-Augmented
+Generation} (RAG) --- não são empregadas neste trabalho, o que também é
+uma decisão deliberada de escopo: o comparativo central aqui não é entre
+diferentes técnicas de instrução, mas entre a presença ou a ausência de
+uma restrição estrutural formal (\textit{schema}) no momento da geração
+--- exatamente a distinção que separa, na literatura revisada, os
+métodos baseados em representações formais (como POWL, usada por Kourani
+et al. 2025 apud \citeonline{bettencourt2026}) dos métodos que delegam a
+validade da saída inteiramente ao julgamento do modelo.
+
+Um segundo mecanismo recorrente é o \textbf{refinamento iterativo}: no
+framework ProMoAI, por exemplo, um laço de retroalimentação captura erros
+de validação e os devolve ao LLM, permitindo até quinze rodadas de
+correção antes de aceitar o modelo gerado (Kourani et al. 2025 apud
+\citeonline{bettencourt2026}). A arquitetura deste trabalho diverge
+deliberadamente desse padrão: a validação é de \textit{passagem única}
+--- um workflow reprovado é descartado e registrado como inválido, sem
+retroalimentação automática ao LLM --- o que simplifica a comparação
+experimental entre os modos \texttt{constrained} e \texttt{free} (a taxa
+de validade observada reflete a capacidade do LLM na primeira tentativa,
+não o efeito de múltiplas correções), ao custo de uma taxa de sucesso
+potencialmente menor do que a relatada por sistemas com refinamento
+iterativo.
+
+Por fim, a literatura também documenta limitações relevantes para a
+interpretação dos resultados deste trabalho. Primeiro, a distinção entre
+validade sintática e correção semântica é bem estabelecida: um modelo
+gerado pode respeitar integralmente as regras formais da notação e, ainda
+assim, não capturar o significado pretendido do processo
+\cite{bettencourt2026}. Segundo, há uma preocupação documentada com
+\textbf{reprodutibilidade}: por dependerem de APIs de LLM cujas
+configurações internas evoluem ao longo do tempo --- atualizações de
+modelo, ajustes de parâmetros não documentados ---, resultados
+considerados robustos num dado momento podem se tornar difíceis de
+reproduzir sob condições nominalmente semelhantes
+\cite{bettencourt2026}. Esse é um risco concreto e não apenas teórico
+para este trabalho, que depende de uma API comercial (Gemini) sujeita a
+indisponibilidade temporária e a limites de requisição variáveis, como
+discutido na Seção 3.6. Terceiro, as práticas de avaliação na área
+permanecem fragmentadas entre benchmarks controlados com métricas
+automáticas, avaliação por especialistas sobre descrições heterogêneas, e
+estudos de caso qualitativos centrados no usuário \cite{bettencourt2026}
+--- o que reforça a necessidade de um ambiente experimental próprio e
+controlado (Seção 3.6), já que resultados obtidos sob um regime de
+avaliação não se transferem diretamente para outro.
+
+\subsection{Geração de automações RPA a partir de interações com modelos de linguagem}
+
+Aproximando a discussão do domínio específico de RPA para aplicações
+web, \citeonline{chen2026} formalizam a mesma tensão que motiva a
+Introdução deste trabalho: agentes de LLM no estilo ReAct --- que
+observam a tela, raciocinam e decidem a próxima ação a cada passo ---
+alcançam alta flexibilidade, mas a um custo de token e tempo proibitivo
+quando a mesma tarefa precisa ser repetida; já o RPA tradicional é
+eficiente em tempo de execução, porém exige esforço manual significativo
+para construir e manter, sendo frágil a mudanças de \textit{layout} da
+interface. A proposta dos autores, AutoRPA, ataca exatamente essa lacuna
+intermediária: um agente \textit{tradutor} converte, passo a passo, as
+ações originalmente ``codificadas de forma rígida'' pelo agente ReAct
+(índices de elemento ou coordenadas absolutas de tela, como
+\texttt{click(index=2)}) em ações ``codificadas de forma flexível'',
+localizando o elemento-alvo por atributos semânticos --- texto visível,
+papel, descrição de conteúdo --- em vez de posição ou índice
+\cite{chen2026}.
+
+Esse mecanismo de tradução é o ponto de contato mais direto entre a
+literatura revisada e uma decisão arquitetural central deste trabalho.
+Assim como o agente tradutor de \citeonline{chen2026} impede que o
+agente LLM amarre a automação a um índice ou a uma posição de tela ---
+precisamente o tipo de referência que se rompe ao menor ajuste de
+\textit{layout} ---, o validador deste trabalho proíbe que o LLM gere
+seletores CSS ou XPath, exigindo que todo alvo de interação seja descrito
+semanticamente (por rótulo, papel, texto visível, \textit{placeholder}
+ou identificador de teste), que são então mapeados para os métodos de
+localização semântica do Playwright (Seção 3.3). Em ambos os casos, a
+aposta é a mesma: seletores semânticos tendem a sobreviver a mudanças
+estruturais da interface que quebrariam seletores posicionais, ainda que,
+como a execução experimental deste trabalho evidenciou, a correspondência
+semântica não seja trivial --- o próprio texto gerado pelo LLM pode
+divergir lexicalmente (variação de hífen, maiúsculas ou acentuação) do
+texto literal renderizado pela aplicação-alvo, exigindo um mecanismo de
+casamento tolerante a essas variações.
+
+\citeonline{chen2026} reportam ainda uma \textbf{estratégia de reparo
+híbrida}: ao falhar a execução de um código gerado, um agente analisador
+localiza o ponto de interrupção e aciona o agente ReAct para retomar a
+exploração a partir dali, produzindo uma demonstração corretiva que
+realimenta a geração do código. Combinada a uma geração aumentada por
+recuperação de trajetórias anteriores (RAG), essa estratégia permite que
+o AutoRPA reduza o consumo de tokens entre 82\% e 96\% frente a um agente
+ReAct puro, mantendo ou superando sua taxa de sucesso em três ambientes
+de GUI distintos (AndroidWorld, WebArena e MiniWoB++)
+\cite{chen2026}. O estudo de caso dos autores sobre o jogo da velha
+ilustra de forma particularmente clara por que esse ganho de robustez
+importa: o código gerado por um método concorrente de aprendizado de
+habilidade (AdaPlanner) fixa uma sequência estática de três jogadas e
+falha assim que o oponente desvia do roteiro previsto, ao passo que o
+código produzido por AutoRPA implementa uma fila de prioridades (vencer,
+bloquear, ocupar o centro, ocupar um canto, ocupar uma borda) reavaliada
+a cada rodada, generalizando para qualquer sequência de jogadas do
+oponente \cite{chen2026}. O paralelo com este trabalho é direto: workflows
+gerados sem validação estrutural tendem a reproduzir esse mesmo padrão de
+fragilidade --- uma sequência fixa de passos que presume um único
+caminho de execução ---, o que reforça a escolha, descrita na Seção 3,
+de submeter toda saída do LLM a um validador determinístico antes de
+autorizar sua execução, independentemente do modo de geração empregado.
+
+Em síntese, a literatura revisada converge para um mesmo princípio
+arquitetural em três domínios distintos --- RPA tradicional, geração de
+modelos BPMN e automação de GUI assistida por LLM: a confiabilidade de um
+sistema que usa um LLM para produzir uma automação não decorre da
+capacidade do modelo em si, mas da existência de uma camada determinística
+entre a geração e a execução, capaz de rejeitar saídas inválidas e de
+ancorar a interação a atributos semânticos robustos da interface. Nenhum
+dos três trabalhos revisados, contudo, compara sistematicamente o efeito
+de restringir essa geração por um \textit{schema} formal (o eixo
+\texttt{constrained} versus \texttt{free} central a este trabalho) nem o
+faz especificamente no domínio de RPA para aplicações web avaliado por
+meio de um catálogo de cenários controlado e reprodutível --- a lacuna
+que a Metodologia descrita a seguir busca preencher.
 
 \section{Metodologia}
 
